@@ -45,43 +45,70 @@ RESTIC_OPTS=${RESTIC_OPTS:-"--verbose"}
 log "Using restic options: $RESTIC_OPTS"
 
 # Parse retention policy
-if [ -n "${RETENTION_POLICY:-}" ]; then
+if [ "${ENABLE_FORGET:-true}" != "true" ]; then
+    log "Snapshot pruning is disabled."
+elif [ -n "${RETENTION_POLICY:-}" ]; then
     log "Parsing retention policy: $RETENTION_POLICY"
     RETENTION_ARGS=""
     
-    # Extract hours
     if [[ $RETENTION_POLICY =~ ([0-9]+)h ]]; then
         HOURS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-within-hourly ${HOURS}h"
-        log "Will keep $HOURS hourly snapshots"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-hourly ${HOURS}"
+        log "Will keep most recent snapshot of the last $HOURS hours"
     fi
     
-    # Extract days
+    if [[ $RETENTION_POLICY =~ ([0-9]+)H ]]; then
+        HOURS="${BASH_REMATCH[1]}"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-hourly ${HOURS}h"
+        log "Will keep all hourly snapshots for the past $HOURS hours"
+    fi
+    
     if [[ $RETENTION_POLICY =~ ([0-9]+)d ]]; then
         DAYS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-within-daily ${DAYS}d"
-        log "Will keep $DAYS daily snapshots"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-daily ${DAYS}"
+        log "Will keep most recent snapshot of the last $DAYS days"
     fi
     
-    # Extract weeks
+    if [[ $RETENTION_POLICY =~ ([0-9]+)D ]]; then
+        DAYS="${BASH_REMATCH[1]}"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-daily ${DAYS}d"
+        log "Will keep all daily snapshots for the past $DAYS days"
+    fi
+    
     if [[ $RETENTION_POLICY =~ ([0-9]+)w ]]; then
         WEEKS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-within-weekly $((WEEKS * 7))d"
-        log "Will keep $WEEKS weekly snapshots"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-weekly $WEEKS"
+        log "Will keep most recent snapshot of the last $WEEKS weeks"
     fi
     
-    # Extract months
+    if [[ $RETENTION_POLICY =~ ([0-9]+)W ]]; then
+        WEEKS="${BASH_REMATCH[1]}"
+        RETENTION_ARGS="$RETENTION_ARGS --keep--within-weekly $((WEEKS * 7))d"
+        log "Will keep all weekly snapshots for the past $WEEKS weeks"
+    fi
+    
     if [[ $RETENTION_POLICY =~ ([0-9]+)m ]]; then
         MONTHS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-within-monthly ${MONTHS}m"
-        log "Will keep $MONTHS monthly snapshots"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-monthly ${MONTHS}"
+        log "Will keep most recent snapshot of the past $MONTHS months"
     fi
     
-    # Extract years
+    if [[ $RETENTION_POLICY =~ ([0-9]+)M ]]; then
+        MONTHS="${BASH_REMATCH[1]}"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-monthly ${MONTHS}m"
+        log "Will keep all monthly snapshots for the past $MONTHS months"
+    fi
+    
     if [[ $RETENTION_POLICY =~ ([0-9]+)y ]]; then
         YEARS="${BASH_REMATCH[1]}"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-yearly ${YEARS}"
+        log "Will keep most recent snapshot of the past $YEARS years"
+    fi
+    
+    if [[ $RETENTION_POLICY =~ ([0-9]+)Y ]]; then
+        YEARS="${BASH_REMATCH[1]}"
         RETENTION_ARGS="$RETENTION_ARGS --keep-within-yearly ${YEARS}y"
-        log "Will keep $YEARS yearly snapshots"
+        log "Will keep all yearly snapshots for the past $YEARS years"
     fi
     
     # If no valid formats were found, use default
