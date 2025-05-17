@@ -1,7 +1,7 @@
 # HomeVault Backup Docker Image
 
-[![Build & Publish](https://github.com/thedebuggedlife/homevault-backup/actions/workflows/build-backup-image.yml/badge.svg)](https://github.com/thedebuggedlife/homevault-backup/actions/workflows/build-backup-image.yml)
-[![Docker Image Version](https://img.shields.io/github/v/release/thedebuggedlife/homevault-backup?sort=semver&label=version)](https://github.com/thedebuggedlife/homevault-backup/pkgs/container/homevault-backup)
+![Build](https://img.shields.io/github/actions/workflow/status/thedebuggedlife/homevault-backup/build_backup_image.yml?logo=githubactions&logoColor=%232088FF)
+![Version](https://img.shields.io/github/v/tag/thedebuggedlife/homevault-backup?sort=semver&logo=docker&logoColor=%232496ED&label=image)
 
 A Docker container that performs regular backups using restic with support for LVM snapshots and Docker Compose integration.
 
