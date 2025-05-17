@@ -52,53 +52,52 @@ if [ -n "${RETENTION_POLICY:-}" ]; then
     # Extract hours
     if [[ $RETENTION_POLICY =~ ([0-9]+)h ]]; then
         HOURS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-hourly $HOURS"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-hourly ${HOURS}h"
         log "Will keep $HOURS hourly snapshots"
     fi
     
     # Extract days
     if [[ $RETENTION_POLICY =~ ([0-9]+)d ]]; then
         DAYS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-daily $DAYS"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-daily ${DAYS}d"
         log "Will keep $DAYS daily snapshots"
     fi
     
     # Extract weeks
     if [[ $RETENTION_POLICY =~ ([0-9]+)w ]]; then
         WEEKS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-weekly $WEEKS"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-weekly $((WEEKS * 7))d"
         log "Will keep $WEEKS weekly snapshots"
     fi
     
     # Extract months
     if [[ $RETENTION_POLICY =~ ([0-9]+)m ]]; then
         MONTHS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-monthly $MONTHS"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-monthly ${MONTHS}m"
         log "Will keep $MONTHS monthly snapshots"
     fi
     
     # Extract years
     if [[ $RETENTION_POLICY =~ ([0-9]+)y ]]; then
         YEARS="${BASH_REMATCH[1]}"
-        RETENTION_ARGS="$RETENTION_ARGS --keep-yearly $YEARS"
+        RETENTION_ARGS="$RETENTION_ARGS --keep-within-yearly ${YEARS}y"
         log "Will keep $YEARS yearly snapshots"
     fi
     
     # If no valid formats were found, use default
     if [ -z "$RETENTION_ARGS" ]; then
         log "No valid retention policy found, using default"
-        RETENTION_ARGS="--keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+        RETENTION_ARGS="--keep-within-daily 7d --keep-within-weekly 28d --keep-within-monthly 6m"
     fi
 else
     # Default retention policy
-    RETENTION_ARGS="--keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+    RETENTION_ARGS="--keep-within-daily 7d --keep-within-weekly 28d --keep-within-monthly 6m"
     log "Using default retention policy: $RETENTION_ARGS"
 fi
 
 # Initialize variables
 SNAPSHOT_CREATED=false
 CONTAINERS_STOPPED=false
-DOCKER_AVAILABLE=false
 
 # Check if Docker is available when needed
 if [ "${USE_DOCKER:-false}" = "true" ]; then
