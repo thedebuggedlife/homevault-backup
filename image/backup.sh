@@ -9,7 +9,7 @@ if [ -t 1 ]; then
 else
     # Not interactive - redirect stderr to docker logs
     # This redirects all error messages to Docker logs
-    exec 2> >(while read line; do echo "[ERROR] $line" | tee -a /proc/1/fd/1; done)
+    exec 2> >(while read line; do echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $line" | tee -a /proc/1/fd/1; done)
 fi
 
 # Function to log messages - these will always go to Docker logs
@@ -148,7 +148,7 @@ if [ "${USE_DOCKER:-false}" = "true" ] && [ -n "$DOCKER_COMPOSE_PROJECT" ] && [ 
     log "Using Docker Compose to manage services"
     
     # Prepare docker compose command
-    COMPOSE_CMD="docker compose -p $DOCKER_COMPOSE_PROJECT"
+    COMPOSE_CMD="docker compose -p $DOCKER_COMPOSE_PROJECT $COMPOSE_FLAGS"
     
     log "Docker Compose command: $COMPOSE_CMD"
     log "Stopping services: $DOCKER_COMPOSE_SERVICES"
@@ -282,7 +282,7 @@ if [ "$CONTAINERS_STOPPED" = "true" ]; then
     if [ -n "$DOCKER_COMPOSE_PROJECT" ] && [ -n "$DOCKER_COMPOSE_SERVICES" ]; then
         log "Restarting Docker Compose services"
         
-        if docker compose -p "$DOCKER_COMPOSE_PROJECT" start $DOCKER_COMPOSE_SERVICES; then
+        if docker compose -p "$DOCKER_COMPOSE_PROJECT" $COMPOSE_FLAGS start $DOCKER_COMPOSE_SERVICES; then
             log "Successfully restarted Docker Compose services"
         else
             log "Error: Failed to restart Docker Compose services"

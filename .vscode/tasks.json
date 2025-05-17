@@ -1,0 +1,13 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: selfhost (test)",
+            "type": "shell",
+            "command": "docker --host=ssh://selfhost build -t homevault-backup:test image/",
+            "problemMatcher": []
+        }
+    ]
+}
