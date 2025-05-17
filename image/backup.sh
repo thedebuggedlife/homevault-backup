@@ -1,9 +1,26 @@
 #!/bin/bash
 set -e
 
-# Function to log messages with timestamp
+# Check if we're running interactively or via cron
+INTERACTIVE=0
+if [ -t 1 ]; then
+    # Terminal is interactive
+    INTERACTIVE=1
+else
+    # Not interactive - redirect stderr to docker logs
+    # This redirects all error messages to Docker logs
+    exec 2> >(while read line; do echo "[ERROR] $line" | tee -a /proc/1/fd/1; done)
+fi
+
+# Function to log messages - these will always go to Docker logs
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    # When running via cron, messages go to Docker logs
+    # When running interactively, messages go to stdout
+    if [ $INTERACTIVE -eq 0 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a /proc/1/fd/1
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    fi
 }
 
 log "Starting backup process"
@@ -81,6 +98,7 @@ fi
 # Initialize variables
 SNAPSHOT_CREATED=false
 CONTAINERS_STOPPED=false
+DOCKER_AVAILABLE=false
 
 # Check if Docker is available when needed
 if [ "${USE_DOCKER:-false}" = "true" ]; then
